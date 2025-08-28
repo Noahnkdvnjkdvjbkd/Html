@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dot Stress Test</title>
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #111; }
+  #controls {
+    position: fixed; top: 10px; left: 10px; color: #0f0; font-family: monospace;
+    background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;
+  }
+  #fps { margin-top: 5px; }
+</style>
+</head>
+<body>
+
+<div id="controls">
+  Number of Dots: <span id="numVal">100000</span><br>
+  <input type="range" id="numSlider" min="1000" max="10000000" value="100000" step="1000"><br>
+  <button id="startTest">Start Test</button>
+  <div id="fps">FPS: </div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let objects = [];
+let numObjects = 100000;
+
+const numSlider = document.getElementById('numSlider');
+const numVal = document.getElementById('numVal');
+const fpsDisplay = document.getElementById('fps');
+
+numSlider.oninput = () => numVal.textContent = numSlider.value;
+
+document.getElementById('startTest').onclick = () => {
+  numObjects = parseInt(numSlider.value);
+  objects = [];
+  for (let i = 0; i < numObjects; i++) {
+    objects.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      dx: (Math.random() - 0.5) * 1,
+      dy: (Math.random() - 0.5) * 1,
+      size: 1,
+      color: `hsl(${Math.random()*360}, 70%, 50%)`
+    });
+  }
+  lastTime = performance.now();
+  runTest();
+}
+
+let lastTime = performance.now();
+
+function runTest() {
+  const now = performance.now();
+  const dt = now - lastTime;
+  const fps = Math.round(1000 / dt);
+  fpsDisplay.textContent = `FPS: ${fps}`;
+  lastTime = now;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let obj of objects) {
+    obj.x += obj.dx;
+    obj.y += obj.dy;
+
+    if (obj.x < 0) obj.x = canvas.width;
+    if (obj.x > canvas.width) obj.x = 0;
+    if (obj.y < 0) obj.y = canvas.height;
+    if (obj.y > canvas.height) obj.y = 0;
+
+    ctx.fillStyle = obj.color;
+    ctx.fillRect(obj.x, obj.y, obj.size, obj.size);
+  }
+
+  requestAnimationFrame(runTest);
+}
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
