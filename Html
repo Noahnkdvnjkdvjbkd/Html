@@ -1,1 +1,104 @@
-echo off time out 
+<!DOCTYPE html>
+<html>
+<head>
+<title>DAT File Editor</title>
+<style>
+body{
+font-family:monospace;
+background:#111;
+color:#fff;
+text-align:center;
+}
+
+textarea{
+width:95%;
+height:400px;
+background:#000;
+color:#0f0;
+border:none;
+padding:10px;
+font-family:monospace;
+}
+
+button{
+padding:10px;
+margin:10px;
+background:#4CAF50;
+border:none;
+color:white;
+cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h2>.DAT Metadata Editor</h2>
+
+<input type="file" id="fileInput">
+<br><br>
+
+<textarea id="editor"></textarea>
+
+<br>
+
+<button onclick="loadFile()">Load File</button>
+<button onclick="saveFile()">Download Edited File</button>
+
+<script>
+
+let originalName = "edited.dat"
+
+function loadFile(){
+
+const file = document.getElementById("fileInput").files[0]
+originalName = file.name
+
+const reader = new FileReader()
+
+reader.onload = function(e){
+
+const bytes = new Uint8Array(e.target.result)
+let hex = ""
+
+for(let i=0;i<bytes.length;i++){
+
+hex += bytes[i].toString(16).padStart(2,"0") + " "
+
+if((i+1)%16===0) hex += "\n"
+
+}
+
+document.getElementById("editor").value = hex
+
+}
+
+reader.readAsArrayBuffer(file)
+
+}
+
+function saveFile(){
+
+let hex = document.getElementById("editor").value.replace(/\s+/g,"")
+
+let bytes = []
+
+for(let i=0;i<hex.length;i+=2){
+
+bytes.push(parseInt(hex.substr(i,2),16))
+
+}
+
+const blob = new Blob([new Uint8Array(bytes)],{type:"application/octet-stream"})
+
+const a = document.createElement("a")
+a.href = URL.createObjectURL(blob)
+a.download = originalName
+a.click()
+
+}
+
+</script>
+
+</body>
+</html>
